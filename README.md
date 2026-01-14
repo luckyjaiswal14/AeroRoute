@@ -30,3 +30,6 @@ AeroRoute is a sophisticated tool designed to optimize ground movement at New De
 ## Tech Stack
 - **Backend**: Python, Flask, NetworkX, Pandas, Scikit-Learn
 - **Frontend**: HTML5, Bootstrap 5, Vis.js
+
+## Tech Stack
+<img width="1470" height="830" alt="AeroRoute_P1" src="https://github.com/user-attachments/assets/d4b87ccb-5d3f-4ea7-933e-4c27b82f5d6a" />

@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 import pandas as pd
 import joblib
 import networkx as nx
+import os
 
 app = Flask(__name__)
 
@@ -16,7 +17,6 @@ for _, row in edges_df.iterrows():
     G.add_edge(row['u'], row['v'], weight=row['length'])
 
 # Load ML model
-import os
 base_dir = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(base_dir, 'models', 'delay_model.pkl')
 encoder_path = os.path.join(base_dir, 'models', 'weather_encoder.pkl')

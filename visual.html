@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New Delhi Airport Route Optimizer</title>
+    <script src="https://unpkg.com/vis-network@9.1.2/dist/vis-network.min.js"></script>
+    <link href="https://unpkg.com/vis-network@9.1.2/styles/vis-network.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #111;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        select, input, button {
+            margin: 5px;
+        }
+        #mynetwork {
+            width: 100%;
+            height: 700px;
+            border: 1px solid #ccc;
+            background-color: #1a1a1a;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>New Delhi Airport Route Optimizer</h2>
+
+    <form method="POST">
+        <label>Start:</label>
+        <select name="start">
+            {% for node in nodes %}
+            <option value="{{ node }}">{{ labels[node]|default(node) }}</option>
+            {% endfor %}
+        </select>
+
+        <label>End:</label>
+        <select name="end">
+            {% for node in nodes %}
+            <option value="{{ node }}">{{ labels[node]|default(node) }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Time of Day:</label>
+        <input type="number" name="time_of_day" required>
+
+        <label>Traffic Level (1-10):</label>
+        <input type="number" name="traffic_level" required>
+
+        <label>Weather:</label>
+        <select name="weather">
+            <option>Clear</option>
+            <option>Rain</option>
+            <option>Fog</option>
+        </select>
+
+        <button type="submit">Predict</button>
+    </form>
+    
+    {% if result %}
+        <h3>Optimal Path: {{ result.readable_path | join(" → ") }}</h3>
+        <h3>Raw Path Distance: {{ result.raw_distance }} meters</h3>
+        <h3>Estimated Travel Time (Shortest Path): {{ result.time }} minutes</h3>
+        <h3>Predicted Operational Delay (from ML Model): {{ result.predicted_delay }} minutes</h3>
+
+        {% if result.total_estimate %}
+            <h3>Total Estimated Taxi Time (Travel + Delay): {{ result.total_estimate }} minutes</h3>
+        {% endif %}
+    {% endif %}
+
+
+    <div id="mynetwork"></div>
+
+    <script>
+        const path = {{ result.path | tojson if result else '[]' }};
+        const labelMap = {{ labels | tojson }};
+
+        // Identify path edges
+        const pathEdges = new Set();
+        for (let i = 0; i < path.length - 1; i++) {
+            pathEdges.add(`${path[i]}->${path[i + 1]}`);
+        }
+
+        const nodes = new vis.DataSet([
+            {% for node in nodes %}
+            {
+                id: {{ node }},
+                label: labelMap["{{ node }}"] || "{{ node }}",
+                color: {
+                    background: path.includes({{ node }}) ? 'red' : 'dodgerblue',
+                    border: '#fff',
+                    highlight: { background: 'orange', border: '#fff' }
+                },
+                font: { color: '#fff' }
+            },
+            {% endfor %}
+        ]);
+
+        const edges = new vis.DataSet([
+            {% for edge in edges %}
+            {
+                from: {{ edge.from }},
+                to: {{ edge.to }},
+                label: "{{ edge.label }}",
+                arrows: "to",
+                color: {
+                    color: pathEdges.has("{{ edge.from }}->{{ edge.to }}") ? "red" : "gray"
+                },
+                font: { align: 'middle', color: '#aaa' }
+            },
+            {% endfor %}
+        ]);
+
+        const container = document.getElementById("mynetwork");
+        const data = { nodes, edges };
+
+        const options = {
+            layout: {
+                improvedLayout: true
+            },
+            edges: {
+                smooth: {
+                    type: 'dynamic'
+                }
+            },
+            physics: {
+                enabled: true,
+                solver: "repulsion",
+                repulsion: {
+                    nodeDistance: 200,
+                    centralGravity: 0.1,
+                    springLength: 200,
+                    springConstant: 0.01,
+                    damping: 0.09
+                }
+            }
+        };
+
+        const network = new vis.Network(container, data, options);
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+start,end,time_of_day,traffic_level,weather,delay
+N1,R1,8,3,Clear,6
+N2,R1,10,6,Rain,10
+N3,R1,14,5,Fog,12
+N4,R1,16,7,Clear,7
+N5,R1,20,2,Rain,9
